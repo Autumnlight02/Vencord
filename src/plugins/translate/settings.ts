@@ -48,6 +48,11 @@ export const settings = definePluginSettings({
         type: OptionType.BOOLEAN,
         description: "Automatically translate your messages before sending. You can also shift/right click the translate button to toggle this",
         default: false
+    },
+    autoTranslateLiveChat: {
+        type: OptionType.BOOLEAN,
+        description: "Automatically translate All Incomming messages in your current channel",
+        default: false
     }
 }).withPrivateSettings<{
     showAutoTranslateAlert: boolean;
