@@ -162,8 +162,8 @@ ${translation}
 
 async function massTranslate(messageArr: Message[]) {
     for (let i = 0; i < messageArr.length; i++) {
-        await handleTranslation(messageArr[i]);
-        await new Promise(r => setTimeout(r, 60));
+        if (await handleTranslation(messageArr[i]) === false) // if not already translated
+            await new Promise(r => setTimeout(r, 60));
 
     }
 }
@@ -191,4 +191,6 @@ async function handleTranslation(message: Message) {
     }
 
     if (trans.text !== "") handleTranslate(message.id, trans);
+
+    return messageAlreadyTranslated;
 }
