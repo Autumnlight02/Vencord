@@ -44,6 +44,7 @@ export const TranslateChatBarIcon: ChatBarButton = ({ isMainChat }) => {
     const { autoTranslateLiveChat } = settings.use(["autoTranslateLiveChat"]);
 
 
+
     if (!isMainChat || !showChatBarButton) return null;
 
     const toggle = () => {
