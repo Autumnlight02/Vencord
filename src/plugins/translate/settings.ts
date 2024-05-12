@@ -63,7 +63,7 @@ export const settings = definePluginSettings({
         type: OptionType.BOOLEAN,
         description: "Show translate button in chat bar",
         default: true
-    },
+    }
 }).withPrivateSettings<{
     showAutoTranslateAlert: boolean;
 }>();
