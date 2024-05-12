@@ -58,6 +58,11 @@ export const settings = definePluginSettings({
         type: OptionType.BOOLEAN,
         description: "Automatically translate All Incomming messages in your current channel",
         default: false
+    },
+    showChatBarButton: {
+        type: OptionType.BOOLEAN,
+        description: "Show translate button in chat bar",
+        default: true
     }
 }).withPrivateSettings<{
     showAutoTranslateAlert: boolean;

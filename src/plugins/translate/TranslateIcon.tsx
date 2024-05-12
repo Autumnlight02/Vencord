@@ -40,9 +40,9 @@ export function TranslateIcon({ height = 24, width = 24, className }: { height?:
 }
 
 export const TranslateChatBarIcon: ChatBarButton = ({ isMainChat }) => {
-    const { autoTranslate, showChatBarButton } = settings.use(["autoTranslate", "showChatBarButton"]);
     const { autoTranslateLiveChat } = settings.use(["autoTranslateLiveChat"]);
 
+    const { autoTranslate, showChatBarButton } = settings.use(["autoTranslate", "showChatBarButton"]);
 
     if (!isMainChat || !showChatBarButton) return null;
 
