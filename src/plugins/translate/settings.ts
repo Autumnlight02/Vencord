@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ */
 
 import { definePluginSettings } from "@api/Settings";
 import { OptionType } from "@utils/types";
@@ -24,48 +24,43 @@ export const settings = definePluginSettings({
         type: OptionType.STRING,
         description: "Input language for received messages",
         default: "auto",
-        hidden: true
+        hidden: true,
     },
     receivedOutput: {
         type: OptionType.STRING,
         description: "Output language for received messages",
         default: "en",
-        hidden: true
+        hidden: true,
     },
     sentInput: {
         type: OptionType.STRING,
         description: "Input language for sent messages",
         default: "auto",
-        hidden: true
+        hidden: true,
     },
     sentOutput: {
         type: OptionType.STRING,
         description: "Output language for sent messages",
         default: "en",
-        hidden: true
+        hidden: true,
     },
     autoTranslate: {
         type: OptionType.BOOLEAN,
-        description: "Automatically translate your messages before sending. You can also shift/right click the translate button to toggle this",
-        default: false
+        description:
+            "Automatically translate your messages before sending. You can also shift/right click the translate button to toggle this",
+        default: false,
     },
     showChatBarButton: {
         type: OptionType.BOOLEAN,
         description: "Show translate button in chat bar",
-        default: true
+        default: true,
     },
     autoTranslateLiveChat: {
         type: OptionType.BOOLEAN,
-        description: "Automatically translate All Incomming messages in your current channel",
-        default: false
+        description:
+            "Automatically translate All Incomming messages in your current channel",
+        default: false,
     },
-    showChatBarButton: {
-        type: OptionType.BOOLEAN,
-        description: "Show translate button in chat bar",
-        default: true
-    },
-
-
 }).withPrivateSettings<{
     showAutoTranslateAlert: boolean;
 }>();
