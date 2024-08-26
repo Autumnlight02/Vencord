@@ -78,6 +78,12 @@ export const settings = definePluginSettings({
         description: "Show a tooltip on the ChatBar button whenever a message is automatically translated",
         default: true
     },
+    autoTranslateLiveChat: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Automatically translate All Incomming messages in your current channel",
+        default: false,
+    },
 }).withPrivateSettings<{
     showAutoTranslateAlert: boolean;
 }>();

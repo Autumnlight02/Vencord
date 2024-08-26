@@ -17,6 +17,7 @@
 */
 
 import { ChatBarButton } from "@api/ChatButtons";
+import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
 import { openModal } from "@utils/modal";
 import { Alerts, Forms, Tooltip, useEffect, useState } from "@webpack/common";
@@ -41,7 +42,7 @@ export function TranslateIcon({ height = 24, width = 24, className }: { height?:
 export let setShouldShowTranslateEnabledTooltip: undefined | ((show: boolean) => void);
 
 export const TranslateChatBarIcon: ChatBarButton = ({ isMainChat }) => {
-    const { autoTranslate, showChatBarButton } = settings.use(["autoTranslate", "showChatBarButton"]);
+    const { autoTranslate, autoTranslateLiveChat, showChatBarButton } = settings.use(["autoTranslate", "showChatBarButton", "autoTranslateLiveChat"]);
 
     const [shouldShowTranslateEnabledTooltip, setter] = useState(false);
     useEffect(() => {
@@ -72,31 +73,38 @@ export const TranslateChatBarIcon: ChatBarButton = ({ isMainChat }) => {
             });
     };
 
-    const button = (
-        <ChatBarButton
-            tooltip="Open Translate Modal"
-            onClick={e => {
-                if (e.shiftKey) return toggle();
+    const toggleAutoTranslate = () => {
+        settings.store.autoTranslateLiveChat = !settings.store.autoTranslateLiveChat;
+    };
 
-                openModal(props => (
-                    <TranslateModal rootProps={props} />
-                ));
-            }}
-            onContextMenu={toggle}
-            buttonProps={{
-                "aria-haspopup": "dialog"
-            }}
-        >
-            <TranslateIcon className={cl({ "auto-translate": autoTranslate, "chat-button": true })} />
-        </ChatBarButton>
+    return (
+        <>
+            <ChatBarButton
+                tooltip="Open Translate Modal"
+                onClick={e => {
+                    if (e.shiftKey) return toggle();
+
+                    openModal(props => (
+                        <TranslateModal rootProps={props} />
+                    ));
+                }}
+                onContextMenu={() => toggle()}
+                buttonProps={{
+                    "aria-haspopup": "dialog"
+                }}
+            >
+                <TranslateIcon className={cl({ "auto-translate": autoTranslate, "chat-button": true })} />
+            </ChatBarButton>
+            <ChatBarButton
+                tooltip="Toggle Auto translate"
+                onClick={e => {
+                    toggleAutoTranslate();
+                }}
+                onContextMenu={() => toggleAutoTranslate()}
+
+            >
+                <TranslateIcon className={cl({ "auto-translate": autoTranslateLiveChat, "chat-button": true })} />
+            </ChatBarButton>
+        </>
     );
-
-    if (shouldShowTranslateEnabledTooltip && settings.store.showAutoTranslateTooltip)
-        return (
-            <Tooltip text="Auto Translate Enabled" forceOpen>
-                {() => button}
-            </Tooltip>
-        );
-
-    return button;
 };

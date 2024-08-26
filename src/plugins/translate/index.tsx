@@ -14,25 +14,28 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ */
 
 import "./styles.css";
 
 import { addChatBarButton, removeChatBarButton } from "@api/ChatButtons";
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
+
 import { addAccessory, removeAccessory } from "@api/MessageAccessories";
 import { addPreSendListener, removePreSendListener } from "@api/MessageEvents";
 import { addButton, removeButton } from "@api/MessagePopover";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
-import { ChannelStore, Menu } from "@webpack/common";
+import { ChannelStore, FluxDispatcher, Menu, MessageStore } from "@webpack/common";
 
 import { settings } from "./settings";
 import { setShouldShowTranslateEnabledTooltip, TranslateChatBarIcon, TranslateIcon } from "./TranslateIcon";
 import { handleTranslate, TranslationAccessory } from "./TranslationAccessory";
-import { translate } from "./utils";
+import { translate, TranslationValue } from "./utils";
+import { Message } from "discord-types/general";
 
 const messageCtxPatch: NavContextMenuPatchCallback = (children, { message }) => {
+
     if (!message.content) return;
 
     const group = findGroupChildrenByChildId("copy-text", children);
@@ -50,6 +53,7 @@ const messageCtxPatch: NavContextMenuPatchCallback = (children, { message }) => 
         />
     ));
 };
+const translatedMessages = new Map<string, TranslationValue>();
 
 export default definePlugin({
     name: "Translate",
@@ -68,35 +72,71 @@ export default definePlugin({
 
         addChatBarButton("vc-translate", TranslateChatBarIcon);
 
-        addButton("vc-translate", message => {
-            if (!message.content) return null;
+        //TODO figure out initial channel
+        let currentChannel = "";
 
+
+        FluxDispatcher.subscribe("CHANNEL_SELECT", (e) => {
+            console.log(e);
+            currentChannel = e.channelId;
+            const messages = MessageStore.getMessages(e.channelId);
+            restoreCachedTranslations(messages._array as Message[]);
+        });
+
+        FluxDispatcher.subscribe("MESSAGE_CREATE", (messageBase) => {
+            if (settings.store.autoTranslateLiveChat === false) return;
+            if (messageBase.message.content.includes("|>>")) return;
+
+            if (messageBase.channelId === currentChannel) {
+                handleTranslation(messageBase.message);
+            }
+        });
+
+        addButton("vc-translate", (message) => {
+            if (!message.content) return null;
             return {
                 label: "Translate",
                 icon: TranslateIcon,
                 message,
                 channel: ChannelStore.getChannel(message.channel_id),
                 onClick: async () => {
-                    const trans = await translate("received", message.content);
-                    handleTranslate(message.id, trans);
-                }
+                    console.log(ChannelStore.getChannel(message.channel_id));
+                    handleTranslation(message);
+                },
             };
         });
 
-        let tooltipTimeout: any;
+
+        addButton("vc-translate-all", (message) => {
+            if (!message.content) return null;
+            return {
+                label: "Translate All Messages",
+                icon: TranslateIcon,
+                message,
+                channel: ChannelStore.getChannel(message.channel_id),
+                onClick: async () => {
+                    const messages = MessageStore.getMessages(message.channel_id);
+                    massTranslate((messages._array as Message[]).toReversed());
+                },
+            };
+        });
+
+
+
         this.preSend = addPreSendListener(async (_, message) => {
             if (!settings.store.autoTranslate) return;
             if (!message.content) return;
 
-            setShouldShowTranslateEnabledTooltip?.(true);
-            clearTimeout(tooltipTimeout);
-            tooltipTimeout = setTimeout(() => setShouldShowTranslateEnabledTooltip?.(false), 2000);
+            const translation = (await translate("sent", message.content)).text;
 
-            const trans = await translate("sent", message.content);
-            message.content = trans.text;
-
+            message.content = `
+${translation}
+|>> ${message.content}
+            `;
         });
     },
+
+
 
     stop() {
         removePreSendListener(this.preSend);
@@ -105,3 +145,38 @@ export default definePlugin({
         removeAccessory("vc-translation");
     },
 });
+
+async function massTranslate(messageArr: Message[]) {
+    for (let i = 0; i < messageArr.length; i++) {
+        if (await handleTranslation(messageArr[i]) === false) // if not already translated
+            await new Promise(r => setTimeout(r, 60));
+
+    }
+}
+
+async function restoreCachedTranslations(messageArr: Message[]) {
+    for (let i = 0; i < messageArr.length; i++) {
+        const message = messageArr[i];
+        const messageAlreadyTranslated = translatedMessages.has(message.id);
+        if (messageAlreadyTranslated === true) {
+            handleTranslate(message.id, translatedMessages.get(message.id)!);
+        }
+    }
+}
+
+async function handleTranslation(message: Message) {
+
+    let trans: TranslationValue = { sourceLanguage: "", text: "" };
+    const messageAlreadyTranslated = translatedMessages.has(message.id);
+    if (messageAlreadyTranslated === false) {
+        trans = await translate("received", message.content);
+        translatedMessages.set(message.id, trans);
+    } else {
+        // console.log("message already translated");
+        trans = translatedMessages.get(message.id)!;
+    }
+
+    if (trans.text !== "") handleTranslate(message.id, trans);
+
+    return messageAlreadyTranslated;
+}
