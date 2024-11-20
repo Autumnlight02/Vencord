@@ -17,10 +17,9 @@
 */
 
 import { ChatBarButton } from "@api/ChatButtons";
-import { Margins } from "@utils/margins";
 import { classes } from "@utils/misc";
 import { openModal } from "@utils/modal";
-import { Alerts, Forms, Tooltip, useEffect, useState } from "@webpack/common";
+import { Alerts, Forms, useEffect, useState } from "@webpack/common";
 
 import { settings } from "./settings";
 import { TranslateModal } from "./TranslateModal";

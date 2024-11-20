@@ -14,25 +14,24 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
+*/
 
 import "./styles.css";
 
 import { addChatBarButton, removeChatBarButton } from "@api/ChatButtons";
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
-
 import { addAccessory, removeAccessory } from "@api/MessageAccessories";
 import { addPreSendListener, removePreSendListener } from "@api/MessageEvents";
 import { addButton, removeButton } from "@api/MessagePopover";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 import { ChannelStore, FluxDispatcher, Menu, MessageStore } from "@webpack/common";
+import { Message } from "discord-types/general";
 
 import { settings } from "./settings";
-import { setShouldShowTranslateEnabledTooltip, TranslateChatBarIcon, TranslateIcon } from "./TranslateIcon";
+import { TranslateChatBarIcon, TranslateIcon } from "./TranslateIcon";
 import { handleTranslate, TranslationAccessory } from "./TranslationAccessory";
 import { translate, TranslationValue } from "./utils";
-import { Message } from "discord-types/general";
 
 const messageCtxPatch: NavContextMenuPatchCallback = (children, { message }) => {
 
@@ -72,18 +71,18 @@ export default definePlugin({
 
         addChatBarButton("vc-translate", TranslateChatBarIcon);
 
-        //TODO figure out initial channel
+        // TODO figure out initial channel
         let currentChannel = "";
 
 
-        FluxDispatcher.subscribe("CHANNEL_SELECT", (e) => {
+        FluxDispatcher.subscribe("CHANNEL_SELECT", e => {
             console.log(e);
             currentChannel = e.channelId;
             const messages = MessageStore.getMessages(e.channelId);
             restoreCachedTranslations(messages._array as Message[]);
         });
 
-        FluxDispatcher.subscribe("MESSAGE_CREATE", (messageBase) => {
+        FluxDispatcher.subscribe("MESSAGE_CREATE", messageBase => {
             if (settings.store.autoTranslateLiveChat === false) return;
             if (messageBase.message.content.includes("|>>")) return;
 
@@ -92,7 +91,7 @@ export default definePlugin({
             }
         });
 
-        addButton("vc-translate", (message) => {
+        addButton("vc-translate", message => {
             if (!message.content) return null;
             return {
                 label: "Translate",
@@ -107,7 +106,7 @@ export default definePlugin({
         });
 
 
-        addButton("vc-translate-all", (message) => {
+        addButton("vc-translate-all", message => {
             if (!message.content) return null;
             return {
                 label: "Translate All Messages",
